@@ -1,17 +1,25 @@
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi import Header, HTTPException
 import sqlite3
 
-ADMIN_PASSWORD = "medishop123"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 def check_password(x_password: str | None):
+    if not ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=500,
+            detail="Server admin password not configured"
+        )
+
     if x_password != ADMIN_PASSWORD:
         raise HTTPException(
             status_code=401,
             detail="Unauthorized"
         )
+
 
 app = FastAPI(title="Medi-Helper")
 
@@ -192,3 +200,4 @@ def delete_medicine(name: str, x_password: str = Header(None)):
     conn.close()
 
     return {"message": "Medicine deleted successfully"}
+
